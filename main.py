@@ -43,7 +43,7 @@ def sign_pdf(pdf_file, signature_image):
     first_page.mergeScaledTranslatedPage(
         PdfFileReader(signature_stream).getPage(0),
         scale=1,
-        tx=410, ty=500
+        tx=410, ty=400
     )
 
     # Create the output PDF in memory
