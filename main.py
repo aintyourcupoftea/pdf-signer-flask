@@ -42,8 +42,8 @@ def sign_pdf(pdf_file, signature_image):
     first_page = pdf_writer.getPage(0)
     first_page.mergeScaledTranslatedPage(
         PdfFileReader(signature_stream).getPage(0),
-        scale=1,
-        tx=410, ty=400
+        scale=0.5,
+        tx=320, ty=70
     )
 
     # Create the output PDF in memory
