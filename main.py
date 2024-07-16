@@ -12,33 +12,20 @@ def sign_pdf(pdf_file, signature_image):
     if not pdf_file or not signature_image:
         return "Please provide both PDF and signature image files.", 400
 
-    # Read PDF
     pdf_reader = PdfFileReader(pdf_file)
-
-    # Convert signature to PDF (handling transparency)
     signature_stream = BytesIO()
     img = Image.open(signature_image)
 
-    # Check if image has an alpha (transparency) channel
-    if img.mode == 'RGBA':
-        # Create a white background image
-        bg = Image.new("RGB", img.size, (255, 255, 255))
-        bg.paste(img, mask=img.split()[3])  # Paste using alpha as mask
-        bg.save(signature_stream, format='PDF', resolution=100.0)
-    else:
-        img.convert("RGB").save(signature_stream, format='PDF', resolution=100.0)
-
+    # **Key Change:** Save with transparency directly
+    img.save(signature_stream, format='PDF', resolution=100.0, transparency=0)
     signature_stream.seek(0)
 
-    # Create a new PDF writer
     pdf_writer = PdfFileWriter()
 
-    # Add all pages from the original PDF to the new writer
     for page_num in range(pdf_reader.numPages):
         page = pdf_reader.getPage(page_num)
         pdf_writer.addPage(page)
 
-    # Add the signature image (now a PDF) to the first page
     first_page = pdf_writer.getPage(0)
     first_page.mergeScaledTranslatedPage(
         PdfFileReader(signature_stream).getPage(0),
@@ -46,12 +33,10 @@ def sign_pdf(pdf_file, signature_image):
         tx=320, ty=70
     )
 
-    # Create the output PDF in memory
     output_stream = BytesIO()
     pdf_writer.write(output_stream)
     output_stream.seek(0)
 
-    # Create a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         tmp_file.write(output_stream.getvalue())
         file_path = tmp_file.name
